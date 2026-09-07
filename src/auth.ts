@@ -29,7 +29,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       sendVerificationRequest: async ({ identifier, url }) => {
         await sendEmail({
           to: identifier,
-          subject: "Sign in to Gadget Gets It Done",
+          subject: "Sign in to Gadget Gets IT Done",
           html: magicLinkEmailHtml(url),
           text: `Sign in: ${url}`,
         });

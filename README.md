@@ -1,4 +1,4 @@
-# Gadget Gets It Done
+# Gadget Gets IT Done
 
 Local tech setup/fix/connect/maintain.
 

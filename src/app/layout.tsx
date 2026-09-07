@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     template: `%s | ${brand.name}`,
   },
   description:
-    "Got a tech problem? Call Gadget Gets It Done. Local home and business tech setup, fix, connect, and maintain — your personal tech guy.",
+    "Got a tech problem? Call Gadget Gets IT Done. Local home and business tech setup, fix, connect, and maintain — your personal tech guy.",
   openGraph: {
     title: brand.name,
     description: brand.tagline,

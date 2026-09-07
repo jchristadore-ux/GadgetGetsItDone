@@ -1,6 +1,6 @@
 export const brand = {
-  name: "Gadget Gets It Done",
-  tagline: "Got a tech problem? Call Gadget Gets It Done.",
+  name: "Gadget Gets IT Done",
+  tagline: "Got a tech problem? Call Gadget Gets IT Done.",
   messaging: {
     smartHome: "Your house is smart. Your tech guy should be too.",
     smallBiz:

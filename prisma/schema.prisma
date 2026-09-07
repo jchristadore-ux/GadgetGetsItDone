@@ -474,8 +474,8 @@ model Notification {
 
 model BusinessSettings {
   id                   String   @id @default(cuid())
-  businessName         String   @default("Gadget Gets It Done")
-  tagline              String   @default("Got a tech problem? Call Gadget Gets It Done.")
+  businessName         String   @default("Gadget Gets IT Done")
+  tagline              String   @default("Got a tech problem? Call Gadget Gets IT Done.")
   phone                String   @default("REPLACE_ME")
   email                String   @default("REPLACE_ME@example.com")
   address1             String   @default("REPLACE_ME")

@@ -7,8 +7,8 @@ async function main() {
     where: { id: "default" },
     create: {
       id: "default",
-      businessName: "Gadget Gets It Done",
-      tagline: "Got a tech problem? Call Gadget Gets It Done.",
+      businessName: "Gadget Gets IT Done",
+      tagline: "Got a tech problem? Call Gadget Gets IT Done.",
       phone: "REPLACE_ME",
       email: "REPLACE_ME@example.com",
       address1: "REPLACE_ME",

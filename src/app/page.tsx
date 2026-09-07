@@ -48,7 +48,7 @@ export default function HomePage() {
             </p>
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4">
               Got a tech problem?
-              <span className="block text-brand-orange">Call Gadget Gets It Done.</span>
+              <span className="block text-brand-orange">Call Gadget Gets IT Done.</span>
             </h1>
             <p className="text-lg text-slate-300 mb-8 max-w-xl">
               {brand.messaging.smartHome} Setup, fix, connect, and maintain — for home and small business.

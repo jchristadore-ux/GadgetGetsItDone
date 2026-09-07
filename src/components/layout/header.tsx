@@ -27,8 +27,8 @@ export function Header() {
           <Image
             src={brand.logoPath}
             alt={brand.name}
-            width={784}
-            height={1168}
+            width={1024}
+            height={1024}
             className="h-12 w-auto sm:h-14 object-contain"
             priority
           />

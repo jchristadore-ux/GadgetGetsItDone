@@ -63,14 +63,16 @@ export default function HomePage() {
             </div>
           </div>
           <div className="flex justify-center">
-            <Image
-              src={brand.logoPath}
-              alt={brand.name}
-              width={360}
-              height={360}
-              className="rounded-full shadow-2xl ring-4 ring-brand-orange/60 object-cover w-64 h-64 md:w-80 md:h-80"
-              priority
-            />
+            <div className="rounded-2xl bg-white p-3 md:p-4 shadow-2xl ring-2 ring-brand-orange/50">
+              <Image
+                src={brand.logoPath}
+                alt={brand.name}
+                width={784}
+                height={1168}
+                className="h-auto w-56 sm:w-64 md:w-72 object-contain"
+                priority
+              />
+            </div>
           </div>
         </div>
       </section>

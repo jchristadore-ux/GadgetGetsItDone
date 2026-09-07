@@ -37,18 +37,14 @@ export function Footer() {
     <footer className="bg-brand-navy text-white">
       <div className="mx-auto max-w-6xl px-4 py-12 grid gap-8 md:grid-cols-4">
         <div>
-          <div className="flex items-center gap-3 mb-4">
+          <div className="mb-4">
             <Image
               src={brand.logoPath}
               alt={brand.name}
-              width={56}
-              height={56}
-              className="h-14 w-14 rounded-full object-cover ring-2 ring-brand-orange"
+              width={784}
+              height={1168}
+              className="h-28 w-auto object-contain rounded-lg bg-white p-2"
             />
-            <div>
-              <div className="font-bold">Gadget</div>
-              <div className="text-brand-orange font-bold">Gets It Done</div>
-            </div>
           </div>
           <p className="text-sm text-slate-300">{brand.tagline}</p>
         </div>

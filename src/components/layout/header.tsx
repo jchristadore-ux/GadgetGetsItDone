@@ -23,19 +23,16 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="flex items-center gap-2 shrink-0">
+        <Link href="/" className="flex items-center gap-2 shrink-0 min-w-0">
           <Image
             src={brand.logoPath}
             alt={brand.name}
-            width={48}
-            height={48}
-            className="h-12 w-12 rounded-full object-cover"
+            width={784}
+            height={1168}
+            className="h-12 w-auto sm:h-14 object-contain"
             priority
           />
-          <span className="hidden sm:block font-bold text-brand-navy leading-tight">
-            Gadget<br />
-            <span className="text-brand-orange">Gets It Done</span>
-          </span>
+          <span className="sr-only">{brand.name}</span>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-5 text-sm font-medium text-brand-slate">

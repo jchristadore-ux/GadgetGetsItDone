@@ -67,8 +67,8 @@ export default function HomePage() {
               <Image
                 src={brand.logoPath}
                 alt={brand.name}
-                width={784}
-                height={1168}
+                width={1024}
+                height={1024}
                 className="h-auto w-56 sm:w-64 md:w-72 object-contain"
                 priority
               />

@@ -41,8 +41,8 @@ export function Footer() {
             <Image
               src={brand.logoPath}
               alt={brand.name}
-              width={784}
-              height={1168}
+              width={1024}
+              height={1024}
               className="h-28 w-auto object-contain rounded-lg bg-white p-2"
             />
           </div>

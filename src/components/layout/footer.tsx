@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { brand } from "@/lib/brand";
+import type { PublicContact } from "@/lib/business-settings";
 
 const cols = [
   {
@@ -32,7 +33,13 @@ const cols = [
   },
 ];
 
-export function Footer() {
+export function Footer({ contact }: { contact?: PublicContact | null }) {
+  const tagline = contact?.tagline || brand.tagline;
+  const phone = contact?.phone;
+  const email = contact?.email;
+  const address = contact?.formattedAddress;
+  const area = contact?.serviceArea;
+
   return (
     <footer className="bg-brand-navy text-white">
       <div className="mx-auto max-w-6xl px-4 py-12 grid gap-8 md:grid-cols-4">
@@ -46,7 +53,25 @@ export function Footer() {
               className="h-28 w-auto object-contain rounded-lg bg-white p-2"
             />
           </div>
-          <p className="text-sm text-slate-300">{brand.tagline}</p>
+          <p className="text-sm text-slate-300">{tagline}</p>
+          <ul className="mt-4 space-y-1 text-sm text-slate-300">
+            {phone && (
+              <li>
+                <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="hover:text-white">
+                  {phone}
+                </a>
+              </li>
+            )}
+            {email && (
+              <li>
+                <a href={`mailto:${email}`} className="hover:text-white">
+                  {email}
+                </a>
+              </li>
+            )}
+            {address && <li>{address}</li>}
+            {area && <li className="text-slate-400">Serving {area}</li>}
+          </ul>
         </div>
         {cols.map((col) => (
           <div key={col.title}>

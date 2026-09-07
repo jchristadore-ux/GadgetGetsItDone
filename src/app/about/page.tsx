@@ -1,9 +1,18 @@
 import Image from "next/image";
 import { brand } from "@/lib/brand";
+import { getPublicContact } from "@/lib/business-settings";
 
 export const metadata = { title: "About" };
+export const dynamic = "force-dynamic";
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const contact = await getPublicContact();
+  const hoursSummary = contact.hours
+    ? Object.entries(contact.hours)
+        .map(([d, h]) => `${d}: ${h}`)
+        .join(" · ")
+    : null;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       <div className="flex items-center gap-4 mb-8">
@@ -15,8 +24,17 @@ export default function AboutPage() {
           We are your local tech guy for home and small business — setup, fix, connect, and maintain.
           We are not a computer repair shop, not Geek Squad, and not a managed service provider.
         </p>
-        <p>{brand.tagline}</p>
-        <p>Service area and hours: REPLACE_ME — update in admin business settings before launch.</p>
+        <p>{contact.tagline || brand.tagline}</p>
+        <p>
+          Service area: {contact.serviceArea || "Add service area in Admin → Settings"}.
+          {hoursSummary ? ` Hours: ${hoursSummary}.` : ""}
+        </p>
+        {(contact.phone || contact.email) && (
+          <p>
+            {contact.phone && <>Phone: {contact.phone}. </>}
+            {contact.email && <>Email: {contact.email}.</>}
+          </p>
+        )}
       </div>
     </div>
   );

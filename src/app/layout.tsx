@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileBookCta } from "@/components/layout/mobile-book-cta";
 import { brand } from "@/lib/brand";
+import { getPublicContact } from "@/lib/business-settings";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -35,18 +36,29 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const contact = await getPublicContact();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    name: brand.name,
-    description: brand.tagline,
+    name: contact.businessName || brand.name,
+    description: contact.tagline || brand.tagline,
     image: brand.logoPath,
-    telephone: brand.phone !== "REPLACE_ME" ? brand.phone : undefined,
-    email: brand.email.includes("REPLACE_ME") ? undefined : brand.email,
+    telephone: contact.phone || undefined,
+    email: contact.email || undefined,
     url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     priceRange: "$$",
-    areaServed: "REPLACE_ME",
+    areaServed: contact.serviceArea || undefined,
+    address: contact.formattedAddress
+      ? {
+          "@type": "PostalAddress",
+          streetAddress: contact.address1 || undefined,
+          addressLocality: contact.city || undefined,
+          addressRegion: contact.state || undefined,
+          postalCode: contact.zip || undefined,
+        }
+      : undefined,
   };
 
   return (
@@ -56,9 +68,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Header />
+        <Header phone={contact.phone} />
         <main className="min-h-[70vh]">{children}</main>
-        <Footer />
+        <Footer contact={contact} />
         <MobileBookCta />
       </body>
     </html>

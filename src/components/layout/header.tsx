@@ -17,8 +17,9 @@ const nav = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function Header() {
+export function Header({ phone }: { phone?: string | null }) {
   const [open, setOpen] = useState(false);
+  const displayPhone = phone || (brand.phone.includes("REPLACE_ME") ? null : brand.phone);
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -44,13 +45,13 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {brand.phone !== "REPLACE_ME" && (
+          {displayPhone && (
             <a
-              href={`tel:${brand.phone}`}
+              href={`tel:${displayPhone.replace(/[^\d+]/g, "")}`}
               className="hidden md:inline-flex items-center gap-1 text-sm font-semibold text-brand-navy"
             >
               <Phone className="h-4 w-4 text-brand-orange" />
-              {brand.phone}
+              {displayPhone}
             </a>
           )}
           <Button asChild size="sm" className="hidden sm:inline-flex">
@@ -82,6 +83,11 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          {displayPhone && (
+            <a href={`tel:${displayPhone.replace(/[^\d+]/g, "")}`} className="block font-semibold text-brand-navy">
+              Call {displayPhone}
+            </a>
+          )}
           <Link href="/book" className="block font-semibold text-brand-orange" onClick={() => setOpen(false)}>
             Book Now
           </Link>

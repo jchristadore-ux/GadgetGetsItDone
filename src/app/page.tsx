@@ -4,6 +4,7 @@ import { ArrowRight, Home, Users, Building2, Wrench, Shield, Smartphone } from "
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { brand } from "@/lib/brand";
+import { getPublicContact } from "@/lib/business-settings";
 
 const categories = [
   { title: "Wi‑Fi & Networking", desc: "Mesh, coverage, guest networks, and rock-solid connections.", icon: Smartphone },
@@ -18,7 +19,7 @@ const memberships = [
   { name: "Business Essentials", price: "$149/mo", blurb: "Your on-call tech guy for the shop, office, or studio." },
 ];
 
-const faqs = [
+const baseFaqs = [
   {
     q: "Are you a computer repair shop?",
     a: "No. We set up, connect, fix, and maintain the tech in your home or business so it just works — more personal tech guy than Geek Squad.",
@@ -31,13 +32,20 @@ const faqs = [
     q: "Can I book tech help for my parents?",
     a: "Absolutely. You can purchase support for their household while keeping accounts and privacy isolated.",
   },
-  {
-    q: "What areas do you serve?",
-    a: "Service area details are listed on Contact. Placeholder: REPLACE_ME — update in business settings.",
-  },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const contact = await getPublicContact();
+  const faqs = [
+    ...baseFaqs,
+    {
+      q: "What areas do you serve?",
+      a: contact.serviceArea
+        ? `We serve ${contact.serviceArea}. More details are on the Contact page.`
+        : "Service area details are listed on Contact. Update service area in Admin → Settings.",
+    },
+  ];
+
   return (
     <>
       <section className="relative overflow-hidden bg-brand-navy text-white">

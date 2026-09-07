@@ -25,7 +25,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Resend({
       apiKey: process.env.RESEND_API_KEY,
-      from: process.env.EMAIL_FROM || "noreply@REPLACE_ME.com",
+      from: process.env.EMAIL_FROM || "Gadget Gets IT Done <onboarding@resend.dev>",
       sendVerificationRequest: async ({ identifier, url }) => {
         await sendEmail({
           to: identifier,

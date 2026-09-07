@@ -14,7 +14,7 @@ export async function sendEmail(params: {
   text?: string;
 }) {
   const resend = getResend();
-  const from = process.env.EMAIL_FROM || `${brand.name} <noreply@REPLACE_ME.com>`;
+  const from = process.env.EMAIL_FROM || `${brand.name} <onboarding@resend.dev>`;
 
   if (!resend) {
     console.info("[email:dev]", params.to, params.subject);
@@ -28,6 +28,11 @@ export async function sendEmail(params: {
     html: params.html,
     text: params.text,
   });
+
+  if (result.error) {
+    console.error("[email] Resend error:", result.error);
+    throw new Error(result.error.message || "Failed to send email");
+  }
 
   return result;
 }

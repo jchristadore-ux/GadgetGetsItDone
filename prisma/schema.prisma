@@ -1,1 +1,569 @@
-PLACEHOLDER
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum PaymentMode {
+  PAY_NOW
+  DEPOSIT
+  QUOTE_REQUIRED
+  PAY_AFTER
+}
+
+enum BookingStatus {
+  DRAFT
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum QuoteStatus {
+  REQUESTED
+  PRICED
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CONVERTED
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  UNPAID
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  VOID
+  UNCOLLECTIBLE
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(CUSTOMER)
+  phone         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts           Account[]
+  sessions           Session[]
+  customer           Customer?
+  admin              Admin?
+  auditLogs          AuditLog[]           @relation("AuditActor")
+  notifications      Notification[]
+  uploadedFiles      UploadedFile[]
+  analyticsEvents    AnalyticsEvent[]
+  supportedPurchased SupportedHousehold[] @relation("Purchaser")
+  supportedHousehold SupportedHousehold[] @relation("Household")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  address1  String?
+  address2  String?
+  city      String?
+  state     String?
+  zip       String?
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings      Booking[]
+  quotes        Quote[]
+  subscriptions Subscription[]
+  payments      Payment[]
+  invoices      Invoice[]
+
+  @@map("customers")
+}
+
+model Admin {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  title       String?
+  bootstrapAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admins")
+}
+
+model ServiceCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  icon        String?
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  services Service[]
+
+  @@map("service_categories")
+}
+
+model Service {
+  id              String      @id @default(cuid())
+  categoryId      String
+  name            String
+  slug            String      @unique
+  shortDesc       String?
+  description     String?     @db.Text
+  basePriceCents  Int?
+  depositCents    Int?
+  durationMinutes Int?
+  paymentMode     PaymentMode @default(PAY_NOW)
+  featured        Boolean     @default(false)
+  active          Boolean     @default(true)
+  sortOrder       Int         @default(0)
+  imageUrl        String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  category  ServiceCategory  @relation(fields: [categoryId], references: [id])
+  options   ServiceOption[]
+  questions ServiceQuestion[]
+  bookingItems BookingItem[]
+  quoteItems   QuoteItem[]
+
+  @@map("services")
+}
+
+model ServiceOption {
+  id             String   @id @default(cuid())
+  serviceId      String
+  name           String
+  description    String?
+  priceCents     Int      @default(0)
+  active         Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("service_options")
+}
+
+model ServiceQuestion {
+  id         String   @id @default(cuid())
+  serviceId  String
+  label      String
+  helpText   String?
+  fieldType  String   @default("text")
+  required   Boolean  @default(false)
+  optionsJson String? @db.Text
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  answers BookingAnswer[]
+
+  @@map("service_questions")
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  customerId      String
+  status          BookingStatus @default(PENDING)
+  scheduledStart  DateTime?
+  scheduledEnd    DateTime?
+  address1        String?
+  address2        String?
+  city            String?
+  state           String?
+  zip             String?
+  notes           String?       @db.Text
+  subtotalCents   Int           @default(0)
+  depositCents    Int           @default(0)
+  totalCents      Int           @default(0)
+  paidCents       Int           @default(0)
+  paymentMode     PaymentMode   @default(PAY_NOW)
+  stripeSessionId String?
+  quoteId         String?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  customer Customer       @relation(fields: [customerId], references: [id])
+  items    BookingItem[]
+  answers  BookingAnswer[]
+  payments Payment[]
+  files    UploadedFile[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([scheduledStart])
+  @@map("bookings")
+}
+
+model BookingItem {
+  id            String @id @default(cuid())
+  bookingId     String
+  serviceId     String
+  name          String
+  quantity      Int    @default(1)
+  unitPriceCents Int
+  totalCents    Int
+  optionNames   String?
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@map("booking_items")
+}
+
+model BookingAnswer {
+  id         String @id @default(cuid())
+  bookingId  String
+  questionId String
+  answer     String @db.Text
+
+  booking  Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  question ServiceQuestion @relation(fields: [questionId], references: [id])
+
+  @@map("booking_answers")
+}
+
+model Quote {
+  id            String      @id @default(cuid())
+  customerId    String
+  status        QuoteStatus @default(REQUESTED)
+  title         String?
+  description   String?     @db.Text
+  subtotalCents Int         @default(0)
+  totalCents    Int         @default(0)
+  validUntil    DateTime?
+  adminNotes    String?     @db.Text
+  pricedAt      DateTime?
+  acceptedAt    DateTime?
+  bookingId     String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  customer Customer    @relation(fields: [customerId], references: [id])
+  items    QuoteItem[]
+
+  @@index([customerId])
+  @@index([status])
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id             String  @id @default(cuid())
+  quoteId        String
+  serviceId      String?
+  name           String
+  description    String?
+  quantity       Int     @default(1)
+  unitPriceCents Int     @default(0)
+  totalCents     Int     @default(0)
+
+  quote   Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@map("quote_items")
+}
+
+model MembershipPlan {
+  id                    String   @id @default(cuid())
+  name                  String
+  slug                  String   @unique
+  description           String?  @db.Text
+  priceCents            Int
+  interval              String   @default("month")
+  stripePriceId         String?
+  stripeProductId       String?
+  featuresJson          String?  @db.Text
+  visitsPerPeriod       Int?
+  active                Boolean  @default(true)
+  sortOrder             Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  subscriptions Subscription[]
+
+  @@map("membership_plans")
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  customerId           String
+  planId               String
+  status               SubscriptionStatus @default(INCOMPLETE)
+  stripeSubscriptionId String?            @unique
+  stripeCustomerId     String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  cancelledAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  customer Customer       @relation(fields: [customerId], references: [id])
+  plan     MembershipPlan @relation(fields: [planId], references: [id])
+
+  @@index([customerId])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  customerId      String
+  bookingId       String?
+  amountCents     Int
+  currency        String        @default("usd")
+  status          PaymentStatus @default(PENDING)
+  stripePaymentId String?       @unique
+  stripeSessionId String?
+  description     String?
+  metadataJson    String?       @db.Text
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  booking  Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([customerId])
+  @@map("payments")
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  customerId      String
+  number          String?       @unique
+  status          InvoiceStatus @default(DRAFT)
+  amountCents     Int           @default(0)
+  stripeInvoiceId String?       @unique
+  pdfUrl          String?
+  dueDate         DateTime?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@map("invoices")
+}
+
+model UploadedFile {
+  id           String   @id @default(cuid())
+  userId       String
+  bookingId    String?
+  filename     String
+  mimeType     String
+  sizeBytes    Int
+  blobUrl      String
+  blobPathname String?
+  purpose      String?
+  createdAt    DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id])
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@map("uploaded_files")
+}
+
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  channel   NotificationChannel
+  status    NotificationStatus  @default(PENDING)
+  subject   String?
+  body      String              @db.Text
+  metaJson  String?             @db.Text
+  sentAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model BusinessSettings {
+  id                   String   @id @default(cuid())
+  businessName         String   @default("Gadget Gets It Done")
+  tagline              String   @default("Got a tech problem? Call Gadget Gets It Done.")
+  phone                String   @default("REPLACE_ME")
+  email                String   @default("REPLACE_ME@example.com")
+  address1             String   @default("REPLACE_ME")
+  city                 String   @default("REPLACE_ME")
+  state                String   @default("REPLACE_ME")
+  zip                  String   @default("REPLACE_ME")
+  serviceArea          String?  @db.Text
+  hoursJson            String?  @db.Text
+  timezone             String   @default("America/New_York")
+  cancellationPolicy   String?  @db.Text
+  depositPercent       Int      @default(25)
+  bookingBufferMinutes Int      @default(30)
+  smsEnabled           Boolean  @default(false)
+  googleCalendarId     String?
+  updatedAt            DateTime @updatedAt
+
+  @@map("business_settings")
+}
+
+model Availability {
+  id        String   @id @default(cuid())
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([dayOfWeek, startTime])
+  @@map("availability")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String?
+  entityId   String?
+  metaJson   String?  @db.Text
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  userId     String?
+  sessionId  String?
+  name       String
+  path       String?
+  metaJson   String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([name])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+model SupportedHousehold {
+  id          String   @id @default(cuid())
+  purchaserId String
+  householdId String
+  label       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  purchaser User @relation("Purchaser", fields: [purchaserId], references: [id])
+  household User @relation("Household", fields: [householdId], references: [id])
+
+  @@unique([purchaserId, householdId])
+  @@map("supported_households")
+}
+
+model ProcessedWebhookEvent {
+  id          String   @id @default(cuid())
+  provider    String
+  eventId     String
+  eventType   String
+  processedAt DateTime @default(now())
+
+  @@unique([provider, eventId])
+  @@map("processed_webhook_events")
+}

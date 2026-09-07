@@ -1,19 +1,19 @@
 import { prisma } from "@/lib/db";
 
-export const metadata = { title: "Bookings" };
+export const metadata = { title: "Memberships" };
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
   let rows: any[] = [];
   try {
     
-    const data = await prisma.booking.findMany({ orderBy: { createdAt: "desc" }, take: 50 });
-    rows = data.map((b) => ({ id: b.id, summary: `${b.status} · $${(b.totalCents/100).toFixed(2)}`, updatedAt: b.updatedAt }));
+    const data = await prisma.membershipPlan.findMany({ orderBy: { sortOrder: "asc" } });
+    rows = data.map((p) => ({ id: p.id, summary: `${p.name} · $${(p.priceCents/100).toFixed(2)}/${p.interval}`, updatedAt: p.updatedAt }));
 
   } catch {}
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">Bookings</h1>
+      <h1 className="text-3xl font-bold mb-6">Memberships</h1>
       <div className="overflow-x-auto rounded-xl border bg-white">
         <table className="w-full text-sm">
           <thead className="bg-brand-offwhite text-left">

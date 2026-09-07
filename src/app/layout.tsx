@@ -7,6 +7,8 @@ import { MobileBookCta } from "@/components/layout/mobile-book-cta";
 import { brand } from "@/lib/brand";
 import { getPublicContact } from "@/lib/business-settings";
 
+export const dynamic = "force-dynamic";
+
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 

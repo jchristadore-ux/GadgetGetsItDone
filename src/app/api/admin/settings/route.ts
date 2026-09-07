@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { requireAdmin } from "@/lib/authz";
@@ -76,6 +77,13 @@ export async function PUT(req: Request) {
         entityId: settings.id,
       },
     });
+
+    revalidatePath("/", "layout");
+    revalidatePath("/contact");
+    revalidatePath("/about");
+    revalidatePath("/cancellation");
+    revalidatePath("/privacy");
+    revalidatePath("/terms");
 
     return NextResponse.json({ settings, message: "Settings saved" });
   } catch (err) {

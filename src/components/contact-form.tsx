@@ -12,9 +12,10 @@ export function ContactForm() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = e.currentTarget;
     setError(null);
     setStatus("idle");
-    const fd = new FormData(e.currentTarget);
+    const fd = new FormData(form);
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -27,7 +28,7 @@ export function ContactForm() {
       });
       if (res.ok) {
         setStatus("ok");
-        e.currentTarget.reset();
+        form.reset();
         return;
       }
       setStatus("err");

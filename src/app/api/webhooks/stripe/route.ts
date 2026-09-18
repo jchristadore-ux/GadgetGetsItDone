@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyStripeSignature } from "@/lib/webhooks";
 import { getStripe } from "@/lib/stripe";
+import { escapeHtml, notifyAdminOfRequest } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -55,7 +56,10 @@ export async function POST(req: Request) {
             paidCents: session.amount_total || 0,
           },
         });
-        const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+        const booking = await prisma.booking.findUnique({
+          where: { id: bookingId },
+          include: { customer: { include: { user: true } }, items: true },
+        });
         if (booking) {
           await prisma.payment.create({
             data: {
@@ -67,6 +71,25 @@ export async function POST(req: Request) {
               stripePaymentId: session.payment_intent || undefined,
               description: "Checkout payment",
             },
+          });
+          const amount = ((session.amount_total || 0) / 100).toFixed(2);
+          const serviceName = booking.items[0]?.name || "Booking";
+          const customerName = booking.customer.user.name || "Customer";
+          const customerEmail = booking.customer.user.email || session.customer_email || "";
+          await notifyAdminOfRequest({
+            type: "payment_received_booking",
+            subject: "[Gadget Gets IT Done] Payment received",
+            html: `
+              <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#0B1F3A">
+                <h2>Payment received</h2>
+                <p><strong>Type:</strong> Booking</p>
+                <p><strong>Amount:</strong> $${amount}</p>
+                <p><strong>Customer:</strong> ${escapeHtml(customerName)}</p>
+                <p><strong>Email:</strong> ${escapeHtml(customerEmail)}</p>
+                <p><strong>Service:</strong> ${escapeHtml(serviceName)}</p>
+                <p><strong>Booking ID:</strong> ${escapeHtml(bookingId)}</p>
+              </div>`,
+            text: `Payment received (booking)\nAmount: $${amount}\nCustomer: ${customerName}\nEmail: ${customerEmail}\nService: ${serviceName}\nBooking ID: ${bookingId}`,
           });
         }
       }
@@ -86,6 +109,20 @@ export async function POST(req: Request) {
               stripeCustomerId: session.customer || undefined,
             },
             update: { status: "ACTIVE" },
+          });
+          const amount = ((session.amount_total || 0) / 100).toFixed(2);
+          await notifyAdminOfRequest({
+            type: "payment_received_membership",
+            subject: "[Gadget Gets IT Done] Payment received",
+            html: `
+              <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#0B1F3A">
+                <h2>Payment received</h2>
+                <p><strong>Type:</strong> Membership</p>
+                <p><strong>Plan:</strong> ${escapeHtml(plan.name)}</p>
+                <p><strong>Amount:</strong> $${amount}</p>
+                <p><strong>Customer ID:</strong> ${escapeHtml(customerId)}</p>
+              </div>`,
+            text: `Payment received (membership)\nPlan: ${plan.name}\nAmount: $${amount}\nCustomer ID: ${customerId}`,
           });
         }
       }

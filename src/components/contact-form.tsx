@@ -13,16 +13,13 @@ export function ContactForm() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     try {
-      const res = await fetch("/api/analytics", {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: "contact_form_submit",
-          meta: {
-            name: fd.get("name"),
-            email: fd.get("email"),
-            message: String(fd.get("message") || "").slice(0, 2000),
-          },
+          name: fd.get("name"),
+          email: fd.get("email"),
+          message: String(fd.get("message") || "").slice(0, 5000),
         }),
       });
       setStatus(res.ok ? "ok" : "err");
@@ -47,7 +44,7 @@ export function ContactForm() {
         <Textarea id="message" name="message" required />
       </div>
       <Button type="submit">Send</Button>
-      {status === "ok" && <p className="text-sm text-green-700">Thanks — we logged your message.</p>}
+      {status === "ok" && <p className="text-sm text-green-700">Thanks — we got your message and will reply soon.</p>}
       {status === "err" && <p className="text-sm text-red-600">Something went wrong. Try again.</p>}
     </form>
   );

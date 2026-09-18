@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { canAccessCustomer } from "@/lib/authz";
 import { getAppUrl, getStripe } from "@/lib/stripe";
+import { escapeHtml, notifyAdminOfRequest } from "@/lib/email";
 
 export async function POST(
   _req: Request,
@@ -53,6 +54,24 @@ export async function POST(
   await prisma.quote.update({
     where: { id: quote.id },
     data: { status: "ACCEPTED", acceptedAt: new Date() },
+  });
+
+  const customerName = quote.customer.user.name || "Customer";
+  const customerEmail = quote.customer.user.email || "";
+  await notifyAdminOfRequest({
+    type: "quote_accepted",
+    subject: "[Gadget Gets IT Done] Quote accepted",
+    html: `
+      <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#0B1F3A">
+        <h2>Quote accepted</h2>
+        <p><strong>Customer:</strong> ${escapeHtml(customerName)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(customerEmail)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(quote.customer.user.phone || "—")}</p>
+        <p><strong>Title:</strong> ${escapeHtml(quote.title || "Quoted service")}</p>
+        <p><strong>Quote ID:</strong> ${escapeHtml(quote.id)}</p>
+        <p><strong>Total:</strong> $${((quote.totalCents || 0) / 100).toFixed(2)}</p>
+      </div>`,
+    text: `Quote accepted\n\nCustomer: ${customerName}\nEmail: ${customerEmail}\nPhone: ${quote.customer.user.phone || "—"}\nTitle: ${quote.title || "Quoted service"}\nQuote ID: ${quote.id}\nTotal: $${((quote.totalCents || 0) / 100).toFixed(2)}`,
   });
 
   return NextResponse.json({ checkoutUrl: checkout.url });

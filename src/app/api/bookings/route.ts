@@ -5,6 +5,7 @@ import { computeCheckoutAmount } from "@/lib/pricing";
 import { rateLimit } from "@/lib/rate-limit";
 import { getAppUrl, getStripe } from "@/lib/stripe";
 import { trackEvent } from "@/lib/analytics";
+import { escapeHtml, notifyAdminOfRequest } from "@/lib/email";
 
 const schema = z.object({
   serviceSlug: z.string(),
@@ -100,6 +101,22 @@ export async function POST(req: Request) {
         },
       });
       await trackEvent({ name: "quote_requested", userId: user.id, meta: { quoteId: quote.id } });
+      await notifyAdminOfRequest({
+        type: "quote_requested",
+        subject: `[Gadget Gets IT Done] Quote requested — ${service.name}`,
+        html: `
+          <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#0B1F3A">
+            <h2>Quote requested</h2>
+            <p><strong>Customer:</strong> ${escapeHtml(body.name)}</p>
+            <p><strong>Email:</strong> ${escapeHtml(body.email)}</p>
+            <p><strong>Phone:</strong> ${escapeHtml(body.phone || "—")}</p>
+            <p><strong>Service:</strong> ${escapeHtml(service.name)}</p>
+            <p><strong>Quote ID:</strong> ${escapeHtml(quote.id)}</p>
+            <p><strong>Notes:</strong></p>
+            <p style="white-space:pre-wrap;background:#F7F9FB;padding:12px;border-radius:8px">${escapeHtml(body.notes || "—").replace(/\n/g, "<br/>")}</p>
+          </div>`,
+        text: `Quote requested\n\nCustomer: ${body.name}\nEmail: ${body.email}\nPhone: ${body.phone || "—"}\nService: ${service.name}\nQuote ID: ${quote.id}\nNotes: ${body.notes || "—"}`,
+      });
       return NextResponse.json({ message: "Quote requested. We will send pricing soon.", quoteId: quote.id });
     }
 
@@ -149,6 +166,23 @@ export async function POST(req: Request) {
     });
 
     await trackEvent({ name: "booking_created", userId: user.id, meta: { bookingId: booking.id } });
+    await notifyAdminOfRequest({
+      type: "booking_created",
+      subject: `[Gadget Gets IT Done] New booking — ${service.name}`,
+      html: `
+        <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#0B1F3A">
+          <h2>New booking</h2>
+          <p><strong>Customer:</strong> ${escapeHtml(body.name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(body.email)}</p>
+          <p><strong>Phone:</strong> ${escapeHtml(body.phone || "—")}</p>
+          <p><strong>Service:</strong> ${escapeHtml(service.name)}</p>
+          <p><strong>Booking ID:</strong> ${escapeHtml(booking.id)}</p>
+          <p><strong>Status:</strong> ${escapeHtml(booking.status)}</p>
+          <p><strong>Notes:</strong></p>
+          <p style="white-space:pre-wrap;background:#F7F9FB;padding:12px;border-radius:8px">${escapeHtml(body.notes || "—").replace(/\n/g, "<br/>")}</p>
+        </div>`,
+      text: `New booking\n\nCustomer: ${body.name}\nEmail: ${body.email}\nPhone: ${body.phone || "—"}\nService: ${service.name}\nBooking ID: ${booking.id}\nStatus: ${booking.status}\nNotes: ${body.notes || "—"}`,
+    });
 
     if (priced.amountDueNowCents > 0 && process.env.STRIPE_SECRET_KEY) {
       const stripe = getStripe();

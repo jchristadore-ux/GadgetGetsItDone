@@ -12,7 +12,7 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for") || "anon";
-  const rl = rateLimit(`contact:${ip}`, 8, 60_000);
+  const rl = rateLimit(`contact:${ip}`, 30, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   try {

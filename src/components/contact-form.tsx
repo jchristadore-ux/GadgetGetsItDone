@@ -8,9 +8,12 @@ import { Label } from "@/components/ui/label";
 
 export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "ok" | "err">("idle");
+  const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError(null);
+    setStatus("idle");
     const fd = new FormData(e.currentTarget);
     try {
       const res = await fetch("/api/contact", {
@@ -22,10 +25,20 @@ export function ContactForm() {
           message: String(fd.get("message") || "").slice(0, 5000),
         }),
       });
-      setStatus(res.ok ? "ok" : "err");
-      if (res.ok) e.currentTarget.reset();
+      if (res.ok) {
+        setStatus("ok");
+        e.currentTarget.reset();
+        return;
+      }
+      setStatus("err");
+      if (res.status === 429) {
+        setError("Too many messages sent — wait a minute and try again.");
+      } else {
+        setError("Something went wrong. Try again.");
+      }
     } catch {
       setStatus("err");
+      setError("Something went wrong. Try again.");
     }
   }
 
@@ -44,8 +57,10 @@ export function ContactForm() {
         <Textarea id="message" name="message" required />
       </div>
       <Button type="submit">Send</Button>
-      {status === "ok" && <p className="text-sm text-green-700">Thanks — we got your message and will reply soon.</p>}
-      {status === "err" && <p className="text-sm text-red-600">Something went wrong. Try again.</p>}
+      {status === "ok" && (
+        <p className="text-sm text-green-700">Thanks — we got your message and will reply soon.</p>
+      )}
+      {status === "err" && error && <p className="text-sm text-red-600">{error}</p>}
     </form>
   );
 }

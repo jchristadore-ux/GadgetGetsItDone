@@ -51,13 +51,24 @@ export function magicLinkEmailHtml(url: string) {
 const FALLBACK_ADMIN_EMAIL = "jchristadore@gmail.com";
 
 /** Resolve who should receive operational admin alerts. */
+function isUsableAlertEmail(value: string | null | undefined): value is string {
+  if (!value) return false;
+  const v = value.trim().toLowerCase();
+  if (!v || isPlaceholder(v)) return false;
+  // Ignore leftover QA / disposable placeholders
+  if (v.endsWith("@example.com") || v.endsWith("@example.org") || v.endsWith("@test.com")) {
+    return false;
+  }
+  return true;
+}
+
 export async function resolveAdminAlertEmail(): Promise<string> {
   const fromEnv = process.env.ADMIN_ALERT_EMAIL?.trim();
-  if (fromEnv && !isPlaceholder(fromEnv)) return fromEnv;
+  if (isUsableAlertEmail(fromEnv)) return fromEnv.trim();
 
   try {
     const settings = await getBusinessSettings();
-    if (settings.email && !isPlaceholder(settings.email)) {
+    if (isUsableAlertEmail(settings.email)) {
       return settings.email.trim();
     }
   } catch (err) {

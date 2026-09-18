@@ -21,10 +21,14 @@ export async function POST(req: Request) {
     const email = body.email.trim().toLowerCase();
     const message = body.message.trim().slice(0, 5000);
 
-    await trackEvent({
-      name: "contact_form_submit",
-      meta: { name, email, message: message.slice(0, 2000) },
-    });
+    try {
+      await trackEvent({
+        name: "contact_form_submit",
+        meta: { name, email, message: message.slice(0, 2000) },
+      });
+    } catch (err) {
+      console.error("[contact] trackEvent failed:", err);
+    }
 
     const safeName = escapeHtml(name);
     const safeEmail = escapeHtml(email);

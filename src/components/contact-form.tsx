@@ -26,17 +26,21 @@ export function ContactForm() {
           message: String(fd.get("message") || "").slice(0, 5000),
         }),
       });
-      if (res.ok) {
-        setStatus("ok");
-        form.reset();
+      if (!res.ok) {
+        setStatus("err");
+        setError(
+          res.status === 429
+            ? "Too many messages sent — wait a minute and try again."
+            : "Something went wrong. Try again."
+        );
         return;
       }
-      setStatus("err");
-      if (res.status === 429) {
-        setError("Too many messages sent — wait a minute and try again.");
-      } else {
-        setError("Something went wrong. Try again.");
+      try {
+        form.reset();
+      } catch {
+        // Ignore reset failures after React re-render / detached node
       }
+      setStatus("ok");
     } catch {
       setStatus("err");
       setError("Something went wrong. Try again.");

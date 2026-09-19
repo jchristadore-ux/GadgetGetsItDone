@@ -36,6 +36,7 @@ export async function POST(req: Request) {
         "wifi-tune-up": { name: "Whole-Home Wi-Fi Tune-Up", base: 14900, mode: "PAY_NOW" },
         "smart-home-starter": { name: "Smart Home Starter Setup", base: 19900, mode: "DEPOSIT", deposit: 5000 },
         "tv-streaming-setup": { name: "TV & Streaming Setup", base: 12900, mode: "PAY_NOW" },
+        "tech-support-call": { name: "General Tech Support Call", base: 7900, mode: "PAY_NOW" },
         "custom-project": { name: "Custom Project", base: 0, mode: "QUOTE_REQUIRED" },
       };
       const d = defaults[body.serviceSlug];

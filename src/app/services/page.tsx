@@ -28,6 +28,9 @@ export default async function ServicesPage() {
     { name: "Smart Home", slug: "smart-home", services: [
       { name: "Smart Home Starter Setup", slug: "smart-home-starter", shortDesc: "Hubs, lights, locks, and routines.", basePriceCents: 19900, paymentMode: "DEPOSIT" },
     ]},
+    { name: "Computers & Printers", slug: "computers-printers", services: [
+      { name: "General Tech Support Call", slug: "tech-support-call", shortDesc: "Remote help for everyday tech problems.", basePriceCents: 7900, paymentMode: "PAY_NOW" },
+    ]},
   ];
 
   const data = categories.length ? categories : fallback;

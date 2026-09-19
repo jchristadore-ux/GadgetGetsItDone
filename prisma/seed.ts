@@ -115,6 +115,18 @@ async function main() {
       paymentMode: "PAY_AFTER",
       durationMinutes: 90,
     },
+
+    {
+      categoryId: comps.id,
+      name: "General Tech Support Call",
+      slug: "tech-support-call",
+      shortDesc: "Remote help for everyday tech problems.",
+      description: "Phone/video call to troubleshoot Wi‑Fi, devices, accounts, printers, and everyday tech issues. Not an on-site visit.",
+      basePriceCents: 7900,
+      paymentMode: "PAY_NOW",
+      durationMinutes: 45,
+      featured: true,
+    },
     {
       categoryId: biz.id,
       name: "Small Business Network Visit",

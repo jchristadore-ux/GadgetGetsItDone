@@ -48,6 +48,16 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         category: { name: "Smart Home" },
         options: [],
       },
+      "tech-support-call": {
+        name: "General Tech Support Call",
+        shortDesc: "Remote help for everyday tech problems.",
+        description: "Phone/video call to troubleshoot Wi‑Fi, devices, accounts, printers, and everyday tech issues. Not an on-site visit.",
+        basePriceCents: 7900,
+        paymentMode: "PAY_NOW",
+        durationMinutes: 45,
+        category: { name: "Computers & Printers" },
+        options: [],
+      },
     };
     service = fallbacks[slug];
   }

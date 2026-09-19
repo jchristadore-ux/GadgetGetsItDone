@@ -14,6 +14,7 @@ const CATALOG = [
   { slug: "wifi-tune-up", name: "Whole-Home Wi-Fi Tune-Up", paymentMode: "PAY_NOW" },
   { slug: "smart-home-starter", name: "Smart Home Starter Setup", paymentMode: "DEPOSIT" },
   { slug: "tv-streaming-setup", name: "TV & Streaming Setup", paymentMode: "PAY_NOW" },
+  { slug: "tech-support-call", name: "General Tech Support Call", paymentMode: "PAY_NOW" },
   { slug: "custom-project", name: "Custom Project (Quote)", paymentMode: "QUOTE_REQUIRED" },
 ];
 
